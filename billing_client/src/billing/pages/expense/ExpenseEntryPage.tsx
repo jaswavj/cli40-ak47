@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { expenseApi, expenseData, expenseError } from '../../../api/expense/expense-api-service';
+import { expenseApi, expenseError, expensePage } from '../../../api/expense/expense-api-service';
 import '../master/Master.css';
 
 type TypeRow = { id: number; name: string };
@@ -32,8 +32,8 @@ const ExpenseEntryPage: React.FC = () => {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    expenseApi.types()
-      .then((res) => setTypes(expenseData<TypeRow[]>(res) || []))
+    expenseApi.types(0, 1000)
+      .then((res) => setTypes(expensePage<TypeRow>(res).items))
       .catch((err) => toast.error(expenseError(err, 'Could not load expense types')));
   }, []);
 

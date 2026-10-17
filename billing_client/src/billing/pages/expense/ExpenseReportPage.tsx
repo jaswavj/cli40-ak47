@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { expenseApi, expenseData, expenseError, expensePage } from '../../../api/expense/expense-api-service';
+import { expenseApi, expenseError, expensePage } from '../../../api/expense/expense-api-service';
 import ListPagination, { DEFAULT_PAGE_SIZE } from '../../components/ListPagination';
 import '../master/Master.css';
 import '../credit/Credit.css';
@@ -22,7 +22,7 @@ const ExpenseReportPage: React.FC = () => {
   const [page, setPage] = useState(0);
 
   useEffect(() => {
-    expenseApi.types().then((res) => setTypes(expenseData<TypeRow[]>(res) || [])).catch(() => undefined);
+    expenseApi.types(0, 1000).then((res) => setTypes(expensePage<TypeRow>(res).items)).catch(() => undefined);
   }, []);
 
   const search = async (p = 0) => {
