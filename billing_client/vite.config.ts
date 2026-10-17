@@ -3,6 +3,10 @@ import react from '@vitejs/plugin-react';
 
 const publicBase = (raw: string | undefined, fallback: string) => {
   let base = (raw || fallback).trim() || fallback;
+  // Relative base keeps hashed CSS/JS working under ROOT, /billing, or any Tomcat context.
+  if (base === '.' || base.startsWith('./')) {
+    return base.endsWith('/') ? base : `${base}/`;
+  }
   if (!base.startsWith('/')) base = `/${base}`;
   if (base !== '/' && !base.endsWith('/')) base = `${base}/`;
   return base;
@@ -10,7 +14,7 @@ const publicBase = (raw: string | undefined, fallback: string) => {
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const base = publicBase(env.VITE_BASE, mode === 'production' ? '/' : '/billing/');
+  const base = publicBase(env.VITE_BASE, mode === 'production' ? './' : '/billing/');
 
   return {
     plugins: [react()],
