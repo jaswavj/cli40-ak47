@@ -240,13 +240,6 @@
   min-width: 0;
 }
 
-.st-chart-scroll {
-  width: 100%;
-  min-width: 0;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
 .st-pie-wrap {
   display: flex;
   flex-direction: column;
@@ -345,10 +338,6 @@
   .st-day { grid-template-columns: 64px 1fr; }
   .crd-stat { padding: 10px 8px; }
   .crd-stat-v { font-size: 1.15rem; }
-}
-
-@media (max-width: 768px) {
-  .st-chart-desk { display: block; }
 }
 
 @media (max-width: 640px) {

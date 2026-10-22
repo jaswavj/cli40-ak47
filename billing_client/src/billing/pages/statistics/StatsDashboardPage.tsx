@@ -277,32 +277,38 @@ const StatsDashboardPage: React.FC = () => {
                 ) : (
                   <>
                     <div className="mst-note" style={{ marginBottom: 8 }}>Every day of the month</div>
-                    <div className="st-chart-desk">
-                      <div className="st-chart-scroll">
-                        <div style={{ width: Math.max(chartDays.length, 2) * (narrow ? 44 : 32), height: chartH }}>
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={chartDays} margin={{ top: 8, right: 8, left: 0, bottom: 4 }} barGap={2} barCategoryGap="8%">
-                              <defs>
-                                <linearGradient id="salesBar" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor="#60a5fa" />
-                                  <stop offset="100%" stopColor={SALES} />
-                                </linearGradient>
-                                <linearGradient id="purchaseBar" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor="#fdba74" />
-                                  <stop offset="100%" stopColor={PURCHASE} />
-                                </linearGradient>
-                              </defs>
-                              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-                              <XAxis dataKey="day" tick={{ fill: 'var(--color-text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} interval={0} />
-                              <YAxis tickFormatter={compact} tick={{ fill: 'var(--color-text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} width={40} />
-                              <Tooltip content={<ChartTip />} cursor={{ fill: 'rgba(15, 23, 42, 0.05)' }} />
-                              <Legend wrapperStyle={{ fontSize: 12 }} />
-                              <Bar dataKey="sales" name="Sales" fill="url(#salesBar)" radius={[6, 6, 0, 0]} maxBarSize={36} />
-                              <Bar dataKey="purchase" name="Purchase" fill="url(#purchaseBar)" radius={[6, 6, 0, 0]} maxBarSize={36} />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
+                    <div className="st-chart-desk" style={{ height: chartH }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={chartDays} margin={{ top: 8, right: 4, left: 0, bottom: 4 }} barGap={1} barCategoryGap="18%">
+                          <defs>
+                            <linearGradient id="salesBar" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#60a5fa" />
+                              <stop offset="100%" stopColor={SALES} />
+                            </linearGradient>
+                            <linearGradient id="purchaseBar" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#fdba74" />
+                              <stop offset="100%" stopColor={PURCHASE} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                          <XAxis
+                            dataKey="day"
+                            tick={{ fill: 'var(--color-text-muted)', fontSize: 10 }}
+                            axisLine={false}
+                            tickLine={false}
+                            interval={0}
+                            tickFormatter={(value) => {
+                              const day = Number(value);
+                              return day % 2 === 1 ? String(value) : '';
+                            }}
+                          />
+                          <YAxis tickFormatter={compact} tick={{ fill: 'var(--color-text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} width={40} />
+                          <Tooltip content={<ChartTip />} cursor={{ fill: 'rgba(15, 23, 42, 0.05)' }} />
+                          <Legend wrapperStyle={{ fontSize: 12 }} />
+                          <Bar dataKey="sales" name="Sales" fill="url(#salesBar)" radius={[4, 4, 0, 0]} maxBarSize={14} />
+                          <Bar dataKey="purchase" name="Purchase" fill="url(#purchaseBar)" radius={[4, 4, 0, 0]} maxBarSize={14} />
+                        </BarChart>
+                      </ResponsiveContainer>
                     </div>
                   </>
                 )}
