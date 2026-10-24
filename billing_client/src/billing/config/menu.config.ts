@@ -37,6 +37,7 @@ export const defaultAppPath = (moduleIds: number[] | undefined): string =>
     : routerPathNames.billing;
 
 export const moduleIdForPath = (pathname: string): number | null => {
+  if (pathname.includes('/app/dashboard')) return MENU_MODULE.statistics;
   if (pathname.includes('/app/billing')) return MENU_MODULE.billing;
   if (pathname.includes('/app/master')) return MENU_MODULE.master;
   if (pathname.includes('/app/stock-reports')) return MENU_MODULE.stockReports;
@@ -179,7 +180,7 @@ export const billingMenuConfig: MenuItemConfig[] = [
       { id: 'permission', name: 'Module Permission', url: routerPathNames.users.permission, icon: 'fas fa-key' },
       { id: 'special-permission', name: 'Special Permission', url: routerPathNames.users.specialPermission, icon: 'fas fa-unlock' },
       { id: 'company-details', name: 'Company Details', url: routerPathNames.admin.companyDetails, icon: 'fas fa-building' },
-      { id: 'monthly-bills', name: 'Monthly Bills', url: routerPathNames.admin.monthlyBills, icon: 'fas fa-file-invoice' },
+      { id: 'monthly-bills', name: 'Edit Bills', url: routerPathNames.admin.monthlyBills, icon: 'fas fa-file-invoice' },
       { id: 'edit-log', name: 'Edit Log', url: routerPathNames.admin.editLog, icon: 'fas fa-history' },
       { id: 'exchange', name: 'Exchange', url: routerPathNames.admin.exchange, icon: 'fas fa-sync' },
       { id: 'exchange-report', name: 'Exchange & Return Report', url: routerPathNames.admin.exchangeReport, icon: 'fas fa-undo' },

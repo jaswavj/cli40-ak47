@@ -206,14 +206,20 @@ public class InventoryService {
             throw new RuntimeException("Please add at least one product with quantity.");
         }
         double grandTotal = nz(request.getGrandTotal());
-        if (grandTotal <= 0) {
-            throw new RuntimeException("Grand total must be greater than zero.");
-        }
         double paid = nz(request.getPaidAmount());
         double extra = nz(request.getExtraDisc());
         double balance = nz(request.getBalanceAmount());
+        if (extra < 0) {
+            throw new RuntimeException("Extra discount cannot be negative.");
+        }
+        if (grandTotal + extra <= 0) {
+            throw new RuntimeException("Grand total must be greater than zero.");
+        }
         if (paid < 0 || balance < 0) {
             throw new RuntimeException("Paid / balance cannot be negative.");
+        }
+        if (paid > grandTotal + 0.01) {
+            throw new RuntimeException("Paid now cannot be more than the total amount.");
         }
         int bankId = request.getBankId() == null ? 0 : request.getBankId();
 

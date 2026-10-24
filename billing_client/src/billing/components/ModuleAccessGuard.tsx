@@ -17,7 +17,7 @@ const ModuleAccessGuard: React.FC = () => {
   if (needed != null && !moduleIds.map(Number).includes(needed)) {
     const dest = defaultAppPath(moduleIds);
     const destModule = moduleIdForPath(dest);
-    return <Navigate to={destModule === needed ? routerPathNames.dashboard : dest} replace />;
+    return <Navigate to={destModule === needed ? routerPathNames.users.changePassword : dest} replace />;
   }
   return <Outlet />;
 };

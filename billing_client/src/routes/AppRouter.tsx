@@ -95,9 +95,9 @@ const AppRouter = () => {
             )}
           >
             <Route path="/app" element={<BillingLayout />}>
-              <Route path="dashboard" element={<Dashboard />} />
               <Route path="users/change-password" element={<ChangePasswordPage />} />
               <Route element={<ModuleAccessGuard />}>
+              <Route path="dashboard" element={<Dashboard />} />
               <Route path="billing" element={<BillingPage />} />
               <Route path="billing/print/:billNo" element={<PrintBill />} />
               <Route path="order-list" element={<OrderListPage />} />

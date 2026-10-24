@@ -112,7 +112,7 @@ const PurchasePage: React.FC = () => {
   const [supplierId, setSupplierId] = useState('0');
   const [invoiceNo, setInvoiceNo] = useState('');
   const [invoiceDate, setInvoiceDate] = useState(today());
-  const [payType, setPayType] = useState('0');
+  const [payType, setPayType] = useState('1');
   const [bankId, setBankId] = useState('0');
   const [paid, setPaid] = useState('0.000');
   const [extra, setExtra] = useState('0.000');
@@ -129,13 +129,20 @@ const PurchasePage: React.FC = () => {
   const [addCost, setAddCost] = useState('');
   const qtyRef = useRef<HTMLInputElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const paidTouched = useRef(false);
 
   useEffect(() => {
     inventoryApi.lookups().then((res) => {
       const data = invData<any>(res);
       setSuppliers(data.suppliers || []);
-      setPayTypes((data.paymentTypes || []).filter((p: Named) => p.id !== 0));
+      const types = (data.paymentTypes || []).filter((p: Named) => p.id !== 0);
+      setPayTypes(types);
       setBanks(data.banks || []);
+      setPayType((prev) => {
+        if (prev !== '0' && types.some((p: Named) => String(p.id) === prev)) return prev;
+        const cash = types.find((p: Named) => p.id === 1) || types.find((p: Named) => /cash/i.test(p.name));
+        return cash ? String(cash.id) : '1';
+      });
     }).catch((err) => toast.error(invError(err, 'Could not load lookups')));
   }, []);
 
@@ -266,17 +273,67 @@ const PurchasePage: React.FC = () => {
     );
   }, [lines]);
 
-  const grand = Math.max(0, sums.net - n(extra));
+  const extraAmt = n(extra);
+  const grand = Math.max(0, sums.net - extraAmt);
   const balance = Math.max(0, grand - n(paid));
+
+  const cashPayTypeId = () => {
+    const cash = payTypes.find((p) => p.id === 1) || payTypes.find((p) => /cash/i.test(p.name));
+    return cash ? String(cash.id) : '1';
+  };
+
+  const isCashPayType = (value: string) => {
+    if (value === '0') return false;
+    if (value === '1') return true;
+    return /cash/i.test(payTypes.find((p) => String(p.id) === value)?.name || '');
+  };
+
+  const upiBankId = () => {
+    const upi = banks.find((b) => /upi/i.test(b.name)) || banks.find((b) => b.id === 1) || banks[0];
+    return upi ? String(upi.id) : '0';
+  };
+
+  const applyPaidDefault = (nextGrand: number) => {
+    setPaid(money(Math.max(0, nextGrand)));
+  };
+
+  const onPayType = (value: string) => {
+    setPayType(value);
+    setBankId(isCashPayType(value) ? '0' : upiBankId());
+  };
+
+  const onPaid = (value: string) => {
+    paidTouched.current = true;
+    const next = n(value);
+    if (next > grand + 0.0005) {
+      setPaid(money(grand));
+      toast.warning('Paid now cannot be more than the total amount.');
+      return;
+    }
+    setPaid(value);
+  };
+
+  const onExtra = (value: string) => {
+    let next = value;
+    const v = n(value);
+    if (v < 0) {
+      next = '0.000';
+    } else if (v > sums.net + 0.0005) {
+      next = money(sums.net);
+      toast.warning('Extra discount cannot be more than the net total.');
+    }
+    setExtra(next);
+    const nextGrand = Math.max(0, sums.net - n(next));
+    if (!paidTouched.current || n(paid) > nextGrand) applyPaidDefault(nextGrand);
+  };
 
   const onSupplier = (id: string) => {
     setSupplierId(id);
     const sup = suppliers.find((s) => String(s.id) === id);
     if (sup?.isGst === 1) {
-      const bank = banks.find((b) => b.id === 2) || banks[0];
-      const upi = payTypes.find((p) => p.id === 2) || payTypes.find((p) => /bank|upi/i.test(p.name));
-      if (upi) setPayType(String(upi.id));
-      if (bank) setBankId(String(bank.id));
+      const bankPay = payTypes.find((p) => p.id === 2) || payTypes.find((p) => /bank/i.test(p.name));
+      if (bankPay) setPayType(String(bankPay.id));
+      setBankId(upiBankId());
     }
   };
 
@@ -304,7 +361,19 @@ const PurchasePage: React.FC = () => {
       toast.warning('Please enter MRP for all products.');
       return false;
     }
-    if (grand <= 0) {
+    if (products.some((l) => n(l.disc) < 0 || n(l.disc) > 100)) {
+      toast.warning('Line discount must be between 0 and 100%.');
+      return false;
+    }
+    if (extraAmt < 0) {
+      toast.warning('Extra discount cannot be negative.');
+      return false;
+    }
+    if (extraAmt > sums.net + 0.0005) {
+      toast.warning('Extra discount cannot be more than the net total.');
+      return false;
+    }
+    if (sums.net <= 0) {
       toast.warning('Grand total must be greater than zero.');
       return false;
     }
@@ -329,11 +398,22 @@ const PurchasePage: React.FC = () => {
       toast.warning('Please select payment mode (Bank details).');
       return false;
     }
+    if (n(paid) < 0) {
+      toast.warning('Paid now cannot be negative.');
+      return false;
+    }
+    if (n(paid) > grand + 0.0005) {
+      toast.warning('Paid now cannot be more than the total amount.');
+      return false;
+    }
     return true;
   };
 
   const openConfirm = () => {
     if (!canOpenSave()) return;
+    if (payType === '0') setPayType(cashPayTypeId());
+    paidTouched.current = false;
+    applyPaidDefault(grand);
     setConfirmOpen(true);
   };
 
@@ -370,8 +450,11 @@ const PurchasePage: React.FC = () => {
       setConfirmOpen(false);
       setLines([]);
       setInvoiceNo('');
+      setPayType(cashPayTypeId());
+      setBankId('0');
       setPaid('0.000');
       setExtra('0.000');
+      paidTouched.current = false;
     } catch (err) {
       toast.error(invError(err, 'Save failed'));
     } finally {
@@ -514,7 +597,25 @@ const PurchasePage: React.FC = () => {
                     <input className="mst-inp" type="number" step="0.001" value={line.mrp} onChange={(e) => patch(line.key, 'mrp', e.target.value)} />
                     {convHint(factor, convUnit, line.mrp)}
                   </td>
-                  <td><input className="mst-inp" type="number" step="0.01" value={line.disc} onChange={(e) => patch(line.key, 'disc', e.target.value)} /></td>
+                  <td>
+                    <input
+                      className="mst-inp"
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      value={line.disc}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v !== '' && (n(v) < 0 || n(v) > 100)) {
+                          toast.warning('Line discount must be between 0 and 100%.');
+                          patch(line.key, 'disc', n(v) < 0 ? '0' : '100');
+                          return;
+                        }
+                        patch(line.key, 'disc', v);
+                      }}
+                    />
+                  </td>
                   <td><input className="mst-inp" type="number" step="0.01" value={line.tax} onChange={(e) => patch(line.key, 'tax', e.target.value)} /></td>
                   <td><input className="mst-inp" type="number" min="0" step="0.001" value={line.free} onChange={(e) => patch(line.key, 'free', e.target.value)} /></td>
                   <td>
@@ -582,7 +683,7 @@ const PurchasePage: React.FC = () => {
             <div className="pos-grid">
               <div className="pos-fg">
                 <span className="pos-lbl">Payment Type</span>
-                <select className="pos-sel" value={payType} onChange={(e) => setPayType(e.target.value)}>
+                <select className="pos-sel" value={payType} onChange={(e) => onPayType(e.target.value)}>
                   <option value="0">Select Payment Type</option>
                   {payTypes.map((p) => (
                     <option key={p.id} value={p.id}>{p.name}</option>
@@ -604,11 +705,11 @@ const PurchasePage: React.FC = () => {
               </div>
               <div className="pos-fg">
                 <span className="pos-lbl">Paid Now</span>
-                <input className="pos-inp" type="number" step="0.001" value={paid} onChange={(e) => setPaid(e.target.value)} />
+                <input className="pos-inp" type="number" min="0" step="0.001" value={paid} onChange={(e) => onPaid(e.target.value)} />
               </div>
               <div className="pos-fg">
                 <span className="pos-lbl">Extra Discount</span>
-                <input className="pos-inp" type="number" step="0.001" value={extra} onChange={(e) => setExtra(e.target.value)} />
+                <input className="pos-inp" type="number" min="0" step="0.001" value={extra} onChange={(e) => onExtra(e.target.value)} />
               </div>
               <div className="pos-fg">
                 <span className="pos-lbl">Balance</span>

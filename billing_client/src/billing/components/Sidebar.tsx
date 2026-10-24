@@ -3,7 +3,7 @@ import MenuItem from './MenuItem';
 import { useSidebar } from '../../context/SidebarContext';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../state/store';
-import { billingMenuConfig, filterMenuByModules } from '../config/menu.config';
+import { billingMenuConfig, filterMenuByModules, hasModuleAccess, MENU_MODULE } from '../config/menu.config';
 import '../../style/sidebar.css';
 import ModuleSidebarShell from '../../components/ModuleSidebarShell';
 import { toggleExpandedMenus } from '../../components/sidebarExpanded';
@@ -24,6 +24,7 @@ const Sidebar: React.FC = () => {
       collapsed={collapsed}
       mobileOpen={mobileOpen}
       onCloseMobile={closeMobileSidebar}
+      showHome={hasModuleAccess(moduleIds, MENU_MODULE.statistics)}
     >
       <ul className="sidebar-menu">
         {menus.map((menu) => (
