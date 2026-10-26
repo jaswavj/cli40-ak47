@@ -1396,7 +1396,7 @@ const BillingPage: React.FC = () => {
               </div>
               <div className="pos-fg" style={{ flex: 0.9, minWidth: 88 }}>
                 <span className="pos-lbl">Price</span>
-                <input className="pos-inp" value={price} readOnly tabIndex={-1} onKeyDown={(e) => e.key === 'Enter' && addProduct()} />
+                <input className="pos-inp" value={price} onChange={(e) => setPrice(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addProduct()} />
               </div>
               <button className="pos-btn" type="button" onClick={addProduct}>ADD</button>
               {!editBillId && (
@@ -1429,8 +1429,12 @@ const BillingPage: React.FC = () => {
                         <span className="pos-unit-tag">{line.displayUnit}</span>
                       </div>
                     </td>
-                    <td>
-                      <input className="pos-inp" value={line.price} readOnly tabIndex={-1} />
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <input
+                        className="pos-inp"
+                        value={line.price}
+                        onChange={(e) => updateLineQtyPrice(line.key, line.qty, parseFloat(e.target.value) || 0)}
+                      />
                     </td>
                     <td onClick={(e) => e.stopPropagation()}>
                       <div className="pos-disc-cell">

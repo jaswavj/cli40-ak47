@@ -61,16 +61,6 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent);
 }
 
-.pos-inp:read-only {
-  background: color-mix(in srgb, var(--color-bg-page) 78%, #cbd5e1);
-  cursor: default;
-}
-
-.pos-inp:read-only:focus {
-  border-color: color-mix(in srgb, var(--color-primary) 14%, transparent);
-  box-shadow: none;
-}
-
 .pos-tog {
   display: flex;
   align-items: center;
