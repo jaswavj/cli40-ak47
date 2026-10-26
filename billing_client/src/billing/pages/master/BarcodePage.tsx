@@ -103,7 +103,7 @@ const BarcodePage: React.FC = () => {
           `<div class="row">${row
             .map((item) => {
               const n = idx++;
-              return `<div class="label"><div class="name">${esc(item.name)}</div><div class="mrp">MRP Rs ${item.mrp}</div><svg id="p-${n}"></svg><div class="code">${esc(item.code)}</div></div>`;
+              return `<div class="label"><div class="name">${esc(item.name)} - ${esc(item.code)}</div><svg id="p-${n}"></svg><div class="mrp">MRP Rs ${item.mrp}</div></div>`;
             })
             .join('')}</div>`
       )
@@ -141,8 +141,7 @@ const BarcodePage: React.FC = () => {
           justify-content: center;
         }
         .name { font-size: ${h >= 28 ? 9 : 8}px; font-weight: 700; line-height: 1.15; max-width: ${w - 2}mm; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .mrp { font-size: ${h >= 28 ? 9 : 8}px; margin: 0.3mm 0; }
-        .code { font-size: 8px; letter-spacing: 0.3px; }
+        .mrp { font-size: ${h >= 28 ? 14 : 12}px; margin: 0.4mm 0 0; font-weight: 900; line-height: 1.1; letter-spacing: 0.15px; -webkit-text-stroke: 0.25px #000; }
         svg { width: ${svgW}mm; height: ${svgH}mm; }
       </style></head><body>
       ${rowsHtml}

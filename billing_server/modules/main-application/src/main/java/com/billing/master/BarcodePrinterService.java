@@ -30,6 +30,7 @@ public class BarcodePrinterService {
     private static final byte[] BOLD_ON = {0x1B, 0x45, 0x01};
     private static final byte[] BOLD_OFF = {0x1B, 0x45, 0x00};
     private static final byte[] FONT_NORMAL = {0x1B, 0x21, 0x00};
+    private static final byte[] FONT_MRP = {0x1B, 0x21, 0x18};
     private static final DecimalFormat DF = new DecimalFormat("0.00");
 
     private final AdminService adminService;
@@ -113,18 +114,18 @@ public class BarcodePrinterService {
             write(out, clip(shop, 24) + "\n");
             write(out, BOLD_OFF);
         }
-        if (!name.isBlank()) {
-            write(out, clip(name, 28) + "\n");
-        }
-        write(out, "MRP Rs " + DF.format(item.getMrp() == null ? 0 : item.getMrp()) + "\n");
+        String top = name.isBlank() ? code : clip(name, 22) + " - " + code;
+        write(out, clip(top, 32) + "\n");
         writeBarcode(out, code);
-        write(out, code + "\n");
+        write(out, FONT_MRP);
+        write(out, "MRP Rs " + DF.format(item.getMrp() == null ? 0 : item.getMrp()) + "\n");
+        write(out, FONT_NORMAL);
     }
 
     private void writeBarcode(ByteArrayOutputStream out, String code) {
         write(out, new byte[]{0x1D, 0x68, 0x50});
         write(out, new byte[]{0x1D, 0x77, 0x02});
-        write(out, new byte[]{0x1D, 0x48, 0x02});
+        write(out, new byte[]{0x1D, 0x48, 0x00});
         byte[] data = ("{B" + code).getBytes(StandardCharsets.US_ASCII);
         if (data.length > 80) {
             throw new RuntimeException("Barcode value is too long: " + code);
